@@ -556,7 +556,7 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
      * Availability time must be equal stream start time
      * Cos segments time counting from it
      */
-    ngx_libc_gmtime(start_time, &tm);
+    ngx_libc_gmtime(ngx_time(), &tm);
 
     *ngx_sprintf(available_time, "%4d-%02d-%02dT%02d:%02d:%02dZ",
              tm.tm_year + 1900, tm.tm_mon + 1,
@@ -904,7 +904,7 @@ ngx_rtmp_dash_write_playlist(ngx_rtmp_session_t *s)
      * Availability time must be equal stream start time
      * Cos segments time counting from it
      */
-    ngx_libc_gmtime(start_time, &tm);
+    ngx_libc_gmtime(ngx_time(), &tm);
 
     *ngx_sprintf(available_time, "%4d-%02d-%02dT%02d:%02d:%02dZ",
              tm.tm_year + 1900, tm.tm_mon + 1,
