@@ -427,22 +427,26 @@ void * ngx_rtmp_rmemcpy(void *dst, const void* src, size_t n);
 static ngx_inline uint16_t
 ngx_rtmp_r16(uint16_t n)
 {
-    return (n << 8) | (n >> 8);
+    return ntohs(n);
 }
 
 
 static ngx_inline uint32_t
 ngx_rtmp_r32(uint32_t n)
 {
-    return (n << 24) | ((n << 8) & 0xff0000) | ((n >> 8) & 0xff00) | (n >> 24);
+    return ntohl(n);
 }
 
 
 static ngx_inline uint64_t
 ngx_rtmp_r64(uint64_t n)
 {
-    return (uint64_t) ngx_rtmp_r32((uint32_t) n) << 32 |
-                      ngx_rtmp_r32((uint32_t) (n >> 32));
+#if (NGX_HAVE_LITTLE_ENDIAN)
+    return (uint64_t) ntohl((uint32_t) n) << 32 |
+                      ntohl((uint32_t) (n >> 32));
+#else
+    return n;
+#endif
 }
 
 
