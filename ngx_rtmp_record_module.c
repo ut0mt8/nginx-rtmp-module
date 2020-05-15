@@ -454,7 +454,7 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
     ngx_err_t                   err;
     ngx_str_t                   path;
     ngx_int_t                   mode, create_mode;
-    u_char                      buf[8], *p;
+    u_char                      buf[8];
     off_t                       file_size;
     uint32_t                    tag_size, mlen, timestamp;
 
@@ -551,11 +551,7 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
             goto done;
         }
 
-        p = (u_char *) &tag_size;
-        p[0] = buf[3];
-        p[1] = buf[2];
-        p[2] = buf[1];
-        p[3] = buf[0];
+        tag_size=ntohl(*(uint32_t*)&buf[0]);
 
         if (tag_size == 0 || tag_size + 4 > file_size) {
             file_size = 0;
@@ -569,11 +565,7 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
             goto done;
         }
 
-        p = (u_char *) &mlen;
-        p[0] = buf[3];
-        p[1] = buf[2];
-        p[2] = buf[1];
-        p[3] = 0;
+        mlen=n3toh4(&buf[1]);
 
         if (tag_size != mlen + 11) {
             ngx_log_error(NGX_LOG_CRIT, s->connection->log, ngx_errno,
@@ -582,11 +574,7 @@ ngx_rtmp_record_node_open(ngx_rtmp_session_t *s,
             goto done;
         }
 
-        p = (u_char *) &timestamp;
-        p[3] = buf[7];
-        p[0] = buf[6];
-        p[1] = buf[5];
-        p[2] = buf[4];
+        timestamp=n3toh4(&buf[4])|((uint32_t)buf[7]<<24);
 
 done:
         rctx->file.offset = file_size;
@@ -891,7 +879,7 @@ ngx_rtmp_record_write_frame(ngx_rtmp_session_t *s,
                             ngx_rtmp_header_t *h, ngx_chain_t *in,
                             ngx_int_t inc_nframes)
 {
-    u_char                      hdr[11], *p, *ph;
+    u_char                      hdr[11], *ph;
     uint32_t                    timestamp, tag_size;
     ngx_rtmp_record_app_conf_t *rracf;
 
@@ -937,16 +925,10 @@ ngx_rtmp_record_write_frame(ngx_rtmp_session_t *s,
 
     *ph++ = (u_char)h->type;
 
-    p = (u_char*)&h->mlen;
-    *ph++ = p[2];
-    *ph++ = p[1];
-    *ph++ = p[0];
+    ph = h4ton3(ph, h->mlen);
 
-    p = (u_char*)&timestamp;
-    *ph++ = p[2];
-    *ph++ = p[1];
-    *ph++ = p[0];
-    *ph++ = p[3];
+    ph = h4ton3(ph, timestamp);
+    *ph++ = (u_char)(timestamp>>24);
 
     *ph++ = 0;
     *ph++ = 0;
@@ -985,12 +967,8 @@ ngx_rtmp_record_write_frame(ngx_rtmp_session_t *s,
 
     /* write tag size */
     ph = hdr;
-    p = (u_char*)&tag_size;
-
-    *ph++ = p[3];
-    *ph++ = p[2];
-    *ph++ = p[1];
-    *ph++ = p[0];
+    *(uint32_t*)ph = htonl(tag_size);
+    ph += 4;
 
     if (ngx_write_file(&rctx->file, hdr, ph - hdr,
                        rctx->file.offset)

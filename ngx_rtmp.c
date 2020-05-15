@@ -825,26 +825,6 @@ ngx_rtmp_fire_event(ngx_rtmp_session_t *s, ngx_uint_t evt,
 }
 
 
-void *
-ngx_rtmp_rmemcpy(void *dst, const void* src, size_t n)
-{
-#if (NGX_HAVE_LITTLE_ENDIAN)
-    u_char     *d, *s;
-
-    d = dst;
-    s = (u_char*)src + n - 1;
-
-    while(s >= (u_char*)src) {
-        *d++ = *s--;
-    }
-#else
-    dst = ngx_cpymem(dst, src, n);
-#endif
-
-    return dst;
-}
-
-
 static ngx_int_t
 ngx_rtmp_init_process(ngx_cycle_t *cycle)
 {
