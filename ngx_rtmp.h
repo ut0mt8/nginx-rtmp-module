@@ -417,34 +417,33 @@ ngx_int_t ngx_rtmp_fire_event(ngx_rtmp_session_t *s, ngx_uint_t evt,
 ngx_int_t ngx_rtmp_set_chunk_size(ngx_rtmp_session_t *s, ngx_uint_t size);
 
 
-/* Bit reverse: we need big-endians in many places  */
-void * ngx_rtmp_rmemcpy(void *dst, const void* src, size_t n);
-
-#define ngx_rtmp_rcpymem(dst, src, n) \
-    (((u_char*)ngx_rtmp_rmemcpy(dst, src, n)) + (n))
-
-
-static ngx_inline uint16_t
-ngx_rtmp_r16(uint16_t n)
+/* Bit agnosticism: we need network to host byte-order conversion in many places  */
+static ngx_inline uint64_t
+ntohll(uint64_t n)
 {
-    return (n << 8) | (n >> 8);
+#if (NGX_HAVE_LITTLE_ENDIAN)
+    return (uint64_t) ntohl((uint32_t) n) << 32 |
+                      ntohl((uint32_t) (n >> 32));
+#else
+    return n;
+#endif
 }
-
 
 static ngx_inline uint32_t
-ngx_rtmp_r32(uint32_t n)
+n3toh4(u_char* src)
 {
-    return (n << 24) | ((n << 8) & 0xff0000) | ((n >> 8) & 0xff00) | (n >> 24);
+    return ((uint32_t)src[0]<<16)|((uint32_t)src[1]<<8)|src[2];
 }
 
-
-static ngx_inline uint64_t
-ngx_rtmp_r64(uint64_t n)
+static ngx_inline u_char*
+h4ton3(u_char* dst, uint32_t src)
 {
-    return (uint64_t) ngx_rtmp_r32((uint32_t) n) << 32 |
-                      ngx_rtmp_r32((uint32_t) (n >> 32));
-}
+    dst[0]=(u_char)(src>>16);
+    dst[1]=(u_char)(src>>8);
+    dst[2]=(u_char)src;
 
+    return dst+3;
+}
 
 /* Receiving messages */
 ngx_int_t ngx_rtmp_receive_message(ngx_rtmp_session_t *s,
