@@ -760,12 +760,7 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
             p = ngx_rtmp_dash_write_content_protection(s, &ctx->drm_info, p, last);
         }
 
-        ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
-                          "dash: attempting to read dash segments during audio processing '%s'", seg_path);
-
         for (j = 0; j < dacf->variant->nelts; j++, var++) {
-            ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
-                          "dash: AUDIO SEGMENT j = '%d'", j);
             if (dacf->nested) {
                 *ngx_sprintf(seg_path, "%V%V/",
                              &ctx->varname, &var->suffix) = 0;
