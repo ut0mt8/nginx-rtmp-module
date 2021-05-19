@@ -156,7 +156,7 @@
 
 #define NGX_RTMP_DASH_MANIFEST_REPRESENTATION_AUDIO                            \
     "      <Representation\n"                                                  \
-    "          id=\"%V_AAC\"\n"                                                \
+    "          id=\"%s_AAC\"\n"                                                \
     "          mimeType=\"audio/mp4\"\n"                                       \
     "          codecs=\"mp4a.%s\"\n"                                           \
     "          audioSamplingRate=\"%ui\"\n"                                    \
@@ -164,8 +164,23 @@
     "        <SegmentTemplate\n"                                               \
     "            presentationTimeOffset=\"0\"\n"                               \
     "            timescale=\"1000\"\n"                                         \
-    "            media=\"%V%s$Time$.m4a\"\n"                                   \
-    "            initialization=\"%V%sinit.m4a\">\n"                           \
+    "            media=\"%s$Time$.m4a\"\n"                                   \
+    "            initialization=\"%sinit.m4a\">\n"                           \
+    "          <SegmentTimeline>\n"
+
+#define NGX_RTMP_DASH_MANIFEST_REPRESENTATION_VARIANT_AUDIO                    \
+    "      <Representation\n"                                                  \
+    "          id=\"%s_AAC\"\n"                                                \
+    "          mimeType=\"audio/mp4\"\n"                                       \
+    "          codecs=\"mp4a.%s\"\n"                                           \
+    "          audioSamplingRate=\"%ui\"\n"
+
+#define NGX_RTMP_DASH_MANIFEST_SEGMENTTPL_VARIANT_AUDIO                        \
+    "        <SegmentTemplate\n"                                               \
+    "            presentationTimeOffset=\"0\"\n"                               \
+    "            timescale=\"1000\"\n"                                         \
+    "            media=\"%s$Time$.m4a\"\n"                                   \
+    "            initialization=\"%sinit.m4a\">\n"                           \
     "          <SegmentTimeline>\n"
 
 
