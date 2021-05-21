@@ -751,6 +751,8 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
         n = ngx_write_fd(fd, buffer, p - buffer);
     }
 
+    var = dacf->variant->elts;
+
     if (ctx->has_audio) {
         p = ngx_slprintf(buffer, last, NGX_RTMP_DASH_MANIFEST_ADAPTATIONSET_AUDIO);
 
@@ -758,18 +760,39 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
             p = ngx_rtmp_dash_write_content_protection(s, &ctx->drm_info, p, last);
         }
 
-        p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_REPRESENTATION_AUDIO,
-                         &ctx->name,
+        for (j = 0; j < dacf->variant->nelts; j++, var++) {
+            if (dacf->nested) {
+                *ngx_sprintf(seg_path, "%V%V/",
+                             &ctx->varname, &var->suffix) = 0;
+            } else {
+                *ngx_sprintf(seg_path, "%V%V%s",
+                             &ctx->varname, &var->suffix, sep) = 0;
+            }
+
+            ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
+                          "dash: read audio segments file for variant '%s'", seg_path);
+
+            p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_REPRESENTATION_VARIANT_AUDIO,
+                         seg_path,
                          codec_ctx->audio_codec_id == NGX_RTMP_AUDIO_AAC ?
                          (codec_ctx->aac_sbr ? "40.5" : "40.2") : "6b",
-                         codec_ctx->sample_rate,
-                         (ngx_uint_t) (codec_ctx->audio_data_rate * 1000),
-                         &ctx->name, sep,
-                         &ctx->name, sep);
+                         codec_ctx->sample_rate);
 
-        p = ngx_rtmp_dash_write_segment_timeline(s, ctx, dacf, p, last);
+            arg = var->args.elts;
+            for (k = 0; k < var->args.nelts && k < 1 ; k++, arg++) {
+                p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_VARIANT_ARG, arg);
+            }
 
-        p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_REPRESENTATION_AUDIO_FOOTER);
+            p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_VARIANT_ARG_FOOTER);
+
+            p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_SEGMENTTPL_VARIANT_AUDIO,
+                         seg_path,
+                         seg_path);
+
+            p = ngx_rtmp_dash_write_segment_timeline(s, ctx, dacf, p, last);
+
+            p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_REPRESENTATION_AUDIO_FOOTER);
+        }
 
         p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_ADAPTATIONSET_AUDIO_FOOTER);
 
