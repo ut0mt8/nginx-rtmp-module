@@ -428,6 +428,9 @@ ngx_rtmp_dash_write_segment_timeline(ngx_rtmp_session_t *s, ngx_rtmp_dash_ctx_t 
     ngx_rtmp_dash_app_conf_t *dacf, u_char *p, u_char *last)
 {
     ngx_uint_t              i, t, d, r;
+    t=0;
+    d=0;
+    r=0;
     ngx_rtmp_dash_frag_t    *f;
 
     for (i = 0; i < ctx->nfrags; i++) {
@@ -1988,6 +1991,7 @@ ngx_rtmp_dash_append(ngx_rtmp_session_t *s, ngx_chain_t *in,
 
     p = buffer;
     size = 0;
+    csize = 0;
 
     for (; in && size < sizeof(buffer); in = in->next) {
 
