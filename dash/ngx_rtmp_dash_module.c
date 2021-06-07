@@ -116,12 +116,14 @@ typedef struct {
 #define NGX_RTMP_DASH_CLOCK_COMPENSATION_NTP       2
 #define NGX_RTMP_DASH_CLOCK_COMPENSATION_HTTP_HEAD 3
 #define NGX_RTMP_DASH_CLOCK_COMPENSATION_HTTP_ISO  4
+#define NGX_RTMP_DASH_CLOCK_COMPENSATION_HTTP_XSDATE  5
 
 static ngx_conf_enum_t                  ngx_rtmp_dash_clock_compensation_type_slots[] = {
     { ngx_string("off"),                NGX_RTMP_DASH_CLOCK_COMPENSATION_OFF },
     { ngx_string("ntp"),                NGX_RTMP_DASH_CLOCK_COMPENSATION_NTP },
     { ngx_string("http_head"),          NGX_RTMP_DASH_CLOCK_COMPENSATION_HTTP_HEAD },
     { ngx_string("http_iso"),           NGX_RTMP_DASH_CLOCK_COMPENSATION_HTTP_ISO },
+    { ngx_string("http_xsdate"),        NGX_RTMP_DASH_CLOCK_COMPENSATION_HTTP_XSDATE },
     { ngx_null_string,                  0 }
 };
 
@@ -863,6 +865,13 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
         case NGX_RTMP_DASH_CLOCK_COMPENSATION_HTTP_ISO:
                 p = ngx_slprintf(buffer, last, NGX_RTMP_DASH_MANIFEST_CLOCK,
                                  "http-iso",
+                                 &dacf->clock_helper_uri
+                );
+                n = ngx_write_fd(fd, buffer, p - buffer);
+        break;
+        case NGX_RTMP_DASH_CLOCK_COMPENSATION_HTTP_XSDATE:
+                p = ngx_slprintf(buffer, last, NGX_RTMP_DASH_MANIFEST_CLOCK,
+                                 "http-xsdate",
                                  &dacf->clock_helper_uri
                 );
                 n = ngx_write_fd(fd, buffer, p - buffer);
