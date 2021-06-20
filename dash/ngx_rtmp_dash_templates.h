@@ -109,6 +109,8 @@
 #define NGX_RTMP_DASH_MANIFEST_VARIANT_ARG                                     \
     "          %V\n"
 
+#define NGX_RTMP_DASH_MANIFEST_VARIANT_ARG_CHAR                                \
+    "          %s\n"
 
 #define NGX_RTMP_DASH_MANIFEST_VARIANT_ARG_FOOTER                              \
     "          >\n"
