@@ -532,6 +532,7 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
     static u_char              frame_rate[(NGX_INT_T_LEN * 2) + 2];
     static u_char              seg_path[NGX_MAX_PATH + 1];
     static u_char              audio_path[NGX_MAX_PATH + 1];
+    static u_char              audio_param_buffer[NGX_MAX_PATH + 1];
 
     dacf = ngx_rtmp_get_module_app_conf(s, ngx_rtmp_dash_module);
     ctx = ngx_rtmp_get_module_ctx(s, ngx_rtmp_dash_module);
@@ -730,7 +731,18 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
                              codec_ctx->avc_level);
 
             arg = var->args.elts;
-            for (k = 0; k < var->args.nelts && k < 3 ; k++, arg++) {
+
+            for (k = 0; k < var->args.nelts; k++, arg++) {
+                ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
+                          "dash: processing data %V", arg);
+
+                if (ngx_strncmp(arg->data, "audio_", strlen("audio_")) == 0 ||
+                  ngx_strncmp(arg->data, "max", strlen("max")) == 0) {
+                  ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
+                          "dash: processing skipping %V", arg);
+                  continue;
+                }
+
                 p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_VARIANT_ARG, arg);
             }
 
@@ -787,8 +799,12 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
                          codec_ctx->sample_rate);
 
             arg = var->args.elts;
-            for (k = 0; k < var->args.nelts && k < 1 ; k++, arg++) {
-                p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_VARIANT_ARG, arg);
+            for (k = 0; k < var->args.nelts; k++, arg++) {
+                if(ngx_strncmp(arg->data, "audio_", strlen("audio_")) == 0) {
+                  ngx_memset(audio_param_buffer, 0, sizeof(audio_param_buffer));
+                  ngx_memcpy(audio_param_buffer, arg->data + 6, arg->len - 6);
+                  p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_VARIANT_ARG_CHAR, audio_param_buffer);
+                }
             }
 
             p = ngx_slprintf(p, last, NGX_RTMP_DASH_MANIFEST_VARIANT_ARG_FOOTER);
