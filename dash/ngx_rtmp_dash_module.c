@@ -782,7 +782,7 @@ ngx_rtmp_dash_write_variant_playlist(ngx_rtmp_session_t *s)
 
         for (j = 0; j < dacf->variant->nelts; j++, var++) {
             if (dacf->nested) {
-                *ngx_sprintf(audio_path, "%V%V/",
+                *ngx_sprintf(audio_path, "%V%V",
                              &ctx->varname, &var->suffix) = 0;
             } else {
                 *ngx_sprintf(audio_path, "%V%V%s",
