@@ -206,6 +206,8 @@
 
 
 #define NGX_RTMP_DASH_MANIFEST_FOOTER                                          \
+    "  <UTCTiming schemeIdUri=\"urn:mpeg:dash:utc:http-xsdate:2014\"\n"        \
+    "       value=\"https://goy-api.isha.in/rawServerTime\" />\n"              \
     "</MPD>\n"
 
 
